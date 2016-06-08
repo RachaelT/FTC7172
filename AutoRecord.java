@@ -1,9 +1,13 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.lang.reflect.Array;
 
 /**
  * Created by skye on 6/8/16.
@@ -12,8 +16,12 @@ import java.io.*;
 public class AutoRecord extends OpMode {
 
     DualPad gpads;
-    File f = new File("/sdcard/FIRST/autorec.txt");
+    File f;
     PrintStream p;
+    Scanner s;
+
+    Boolean record = false;
+    Boolean play = false;
 
     @Override
     public void init(){
@@ -23,9 +31,29 @@ public class AutoRecord extends OpMode {
 
         gpads = new DualPad();
 
-       //Opens the PrintWriter to write the state of the controller to your file
+        ArrayList<File> fs = gpads.getRecordedPlays();
+      // int fcount = 0;
+        gpads.setPads(gamepad1, gamepad2);
+      //  if(gpads.a) break;
+        if(gpads.b) record = true;
+        if(record) play = false;
+
+        if(gpads.x) play = true;
+        if(play) record = false;
+
+        telemetry.addData("Record (B)", record);
+        telemetry.addData("Play (X)", play);
+
+            //waitOneHardwareCycle();
+
+        f = fs.get(0);
+        telemetry.addData("File", f.getName());
+
         try{
-           p = new PrintStream(f);
+            if(record)
+                p = new PrintStream(f);
+            if(play)
+               s = new Scanner(f);
         }
         catch(IOException e){
 
@@ -40,143 +68,15 @@ public class AutoRecord extends OpMode {
          ****************************/
 
         gpads.setPads(gamepad1, gamepad2);
-        record();
+        if(record) {
+            gpads.recordState(p);
+        }
+        if(play){
+            gpads.playState(s);
+        }
     }
 
-    public void record(){
-        /*
-        Eval order goes:
-        A button
-        B button
-        Y button
-        X button
-        Shift-A
-        Shift-B
-        Shift-Y
-        Shift-X
 
-        L Bumper
-        R Bumper
-        DPAD Down
-        DPAD Right
-        DPAD Up
-        DPAD Left
-        Shift-DPAD Down
-        Shift-DPAD Right
-        Shift-DPAD Up
-        Shift-DPAD Left
-
-        //Double Values
-        L Trigger
-        Shift LTrigger
-        R Trigger
-        Shift RTrigger
-        LJoy Y
-        LJoy X
-        RJoyY
-        RJoy X
-     */
-
-        //Boolean values
-
-        gpads.setPads(gamepad1, gamepad2);
-        String state = "";
-
-        state += gpads.a;
-        state += " ";
-
-        state += gpads.b;
-        state += " ";
-
-        state += gpads.y;
-        state += " ";
-
-        state += gpads.x;
-        state += " ";
-
-        state += gpads.shift_a;
-        state += " ";
-
-        state += gpads.shift_b;
-        state += " ";
-
-        state += gpads.shift_y;
-        state += " ";
-
-        state += gpads.shift_x;
-        state += " ";
-
-        state += gpads.left_bumper;
-        state += " ";
-
-        state += gpads.right_bumper;
-        state += " ";
-
-        state += gpads.dpad_down;
-        state += " ";
-
-        state += gpads.dpad_right;
-        state += " ";
-
-        state += gpads.dpad_up;
-        state += " ";
-
-        state += gpads.dpad_left;
-        state += " ";
-
-        state += gpads.shift_dpad_down;
-        state += " ";
-
-        state += gpads.shift_dpad_right;
-        state += " ";
-
-        state += gpads.shift_dpad_up;
-        state += " ";
-
-        state += gpads.shift_dpad_left;
-        state += " ";
-
-        //Double Values
-
-        state += gpads.left_trigger;
-        state += " ";
-
-        state += gpads.shift_left_trigger;
-        state += " ";
-
-        state += gpads.right_trigger;
-        state += " ";
-
-        state += gpads.shift_right_trigger;
-        state += " ";
-
-        state += gpads.left_stick_y;
-        state += " ";
-
-        state += gpads.left_stick_x;
-        state += " ";
-
-        state += gpads.right_stick_y;
-        state += " ";
-
-        state += gpads.right_stick_x;
-        state += " ";
-
-        state += gpads.shift_left_stick_y;
-        state += " ";
-
-        state += gpads.shift_left_stick_x;
-        state += " ";
-
-        state += gpads.shift_right_stick_y;
-        state += " ";
-
-
-        state += gpads.shift_right_stick_x;
-        state += " ";
-
-        p.println(state);
-    }
 
 
     @Override
