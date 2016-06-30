@@ -15,13 +15,16 @@ import java.lang.reflect.Array;
 
 public class AutoRecord extends OpMode {
 
-    DualPad gpads;
-    File f;
-    PrintStream p;
     Scanner s;
+    ArrayList<File> fs;
+    DualPad gpads;
+    ArrayList<File> cues;
+    int fileTrack = 0;
+    Scanner scan;
+    PrintStream print;
+    boolean pastPrint = false;
+    boolean playing = false;
 
-    Boolean record = false;
-    Boolean play = false;
 
     @Override
     public void init(){
@@ -29,34 +32,13 @@ public class AutoRecord extends OpMode {
          * Your init code goes here
          ****************************/
 
+        fs = gpads.getRecordedPlays();
         gpads = new DualPad();
-
-        ArrayList<File> fs = gpads.getRecordedPlays();
-      // int fcount = 0;
-        gpads.setPads(gamepad1, gamepad2);
-      //  if(gpads.a) break;
-        if(gpads.b) record = true;
-        if(record) play = false;
-
-        if(gpads.x) play = true;
-        if(play) record = false;
-
-        telemetry.addData("Record (B)", record);
-        telemetry.addData("Play (X)", play);
-
-            //waitOneHardwareCycle();
-
-        f = fs.get(0);
-        telemetry.addData("File", f.getName());
-
-        try{
-            if(record)
-                p = new PrintStream(f);
-            if(play)
-               s = new Scanner(f);
+        cues = gpads.getRecordedPlays();
+        try {
+            scan = new Scanner(cues.get(0));
         }
-        catch(IOException e){
-
+        catch(IOException e) {
         }
     }
 
@@ -67,13 +49,57 @@ public class AutoRecord extends OpMode {
          * Your loop code goes here
          ****************************/
 
-        gpads.setPads(gamepad1, gamepad2);
-        if(record) {
-            gpads.recordState(p);
-        }
-        if(play){
-            gpads.playState(s);
-        }
+            gpads.setPads(gamepad1, gamepad2);
+
+            //Press UP on the DPAD to cycle through your saved files
+            if(gpads.dpad_up && !(gpads.left_bumper || gpads.right_bumper)) {
+                fileTrack++;
+                fileTrack = fileTrack % cues.size();
+                try {
+                    scan = new Scanner(cues.get(fileTrack));
+                }
+                catch(IOException e){
+
+                }
+            }
+            try {
+                if(gpads.b && !gpads.right_bumper && (pastPrint == false)) {
+                    print = new PrintStream(cues.get(fileTrack));
+                }
+            }
+            catch(IOException e){
+
+            }
+
+            telemetry.addData("File", cues.get(fileTrack));
+
+            //Press RIGHT BUMPER to play
+            if(gpads.right_bumper && !gpads.left_bumper){
+                if(scan.hasNextLine())
+                    gpads.playState(scan);
+                playing = true;
+            }
+            if(!gpads.right_bumper){
+                playing = false;
+                scan.close();
+                try {
+                    scan = new Scanner(cues.get(fileTrack));
+                }
+                catch(FileNotFoundException e){
+                }
+            }
+
+            // Press B BUTTON to record
+            if(gpads.b && !gpads.right_bumper && !playing){
+                gpads.recordState(print);
+                pastPrint = true;
+            }
+            else {
+                if (pastPrint) {
+                    print.close();
+                    pastPrint = false;
+                }
+            }
     }
 
 
@@ -86,7 +112,7 @@ public class AutoRecord extends OpMode {
          * Your stop code goes here.
          ****************************/
 
-        p.close();
+        print.close();
     }
 
 }

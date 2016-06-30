@@ -240,7 +240,8 @@ public class DualPad {
     /*Reads one line of the recorded state to the controller variables
      *Takes a scanner with the file containing the recorded play.
      */
-    public void playState(Scanner scan){
+    public void playState(Scanner scanni){
+        Scanner scan = new Scanner(scanni.nextLine());
         a = Boolean.parseBoolean(scan.next());
         b = Boolean.parseBoolean(scan.next());
         y = Boolean.parseBoolean(scan.next());
@@ -252,7 +253,7 @@ public class DualPad {
         shift_x = Boolean.parseBoolean(scan.next());
 
         left_bumper = Boolean.parseBoolean(scan.next());
-        right_bumper = Boolean.parseBoolean(scan.next());
+        Boolean.parseBoolean(scan.next());
 
         dpad_down = Boolean.parseBoolean(scan.next());
         dpad_right = Boolean.parseBoolean(scan.next());
@@ -279,7 +280,7 @@ public class DualPad {
         shift_right_stick_y = Float.parseFloat(scan.next());
         shift_right_stick_x = Float.parseFloat(scan.next());
 
-        scan.nextLine();
+        //scan.nextLine();
     }
 
     /*Finds all recorded plays in the phone's directory, and returns them to the user.
